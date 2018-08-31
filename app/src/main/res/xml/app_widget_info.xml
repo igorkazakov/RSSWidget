@@ -3,9 +3,8 @@
     android:configure="com.example.igor.widget.screen.settings.AppWidgetConfigureActivity"
     android:initialKeyguardLayout="@layout/app_widget"
     android:initialLayout="@layout/app_widget"
-    android:minHeight="250dp"
+    android:minHeight="180dp"
     android:minWidth="250dp"
     android:previewImage="@drawable/example_appwidget_preview"
     android:resizeMode="horizontal|vertical"
-    android:updatePeriodMillis="86400000"
-    android:widgetCategory="home_screen"></appwidget-provider>
+    android:updatePeriodMillis="86400000"></appwidget-provider>

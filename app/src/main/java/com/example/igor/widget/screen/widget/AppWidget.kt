@@ -1,21 +1,17 @@
 package com.example.igor.widget.screen.widget
 
-import android.annotation.TargetApi
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
-import android.widget.RemoteViews
-
-import com.example.igor.widget.R
-import com.example.igor.widget.screen.settings.AppWidgetConfigureActivity
 import android.content.Intent
-import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.Toast
+import android.widget.RemoteViews
 import com.example.igor.rsswidjet.DataService.Repository
 import com.example.igor.widget.DataService.models.Article
+import com.example.igor.widget.R
+import com.example.igor.widget.screen.settings.AppWidgetConfigureActivity
 import com.example.igor.widget.service.ArticleListService
 import com.example.igor.widget.service.UpdateService
 import com.example.igor.widget.utils.PreferencesUtils
@@ -85,14 +81,12 @@ class AppWidget : AppWidgetProvider() {
 
             AppWidgetManager.ACTION_APPWIDGET_UPDATE -> {
 
-                Log.e("qqq", "ACTION_APPWIDGET_UPDATE")
                 val article: Article? = intent.extras.getParcelable(ARTICLE)
                 if (article != null) {
 
                     if (articleId < 0) {
 
-                        Log.e("qqq", "init article")
-                        showArticle(context, widgetId, article)
+                        showArticle(context, widgetId, article, View.VISIBLE)
 
                     } else {
                         updateCurrentArticle(context, null, widgetId)
@@ -101,9 +95,10 @@ class AppWidget : AppWidgetProvider() {
             }
 
             MOVE_TO_ARTICLE -> {
+
                 val article: Article? = intent.extras.getParcelable(ARTICLE)
                 if (article != null) {
-                    showArticle(context, widgetId, article)
+                    showArticle(context, widgetId, article, View.GONE)
                 }
             }
 
@@ -116,29 +111,34 @@ class AppWidget : AppWidgetProvider() {
                           appWidgetManager: AppWidgetManager,
                           appWidgetIds: IntArray) {
 
-        if (PreferencesUtils.instance.getWidgetId() < 0) {
-            if (appWidgetIds.isNotEmpty()) {
-
-                val serviceIntent = Intent(context, UpdateService::class.java)
-                context.startService(serviceIntent.putExtra(UpdateService.RSS_URL,
-                        "https://lenta.ru/rss/articles"))
-                PreferencesUtils.instance.saveWidgetId(appWidgetIds[0])
-            }
-        }
-
-        Log.e("qqq", "onUpdate")
-
-        //updateCurrentArticle(context, appWidgetManager, appWidgetIds[0])
+//        if (PreferencesUtils.instance.getWidgetId() < 0) {
+//            if (appWidgetIds.isNotEmpty()) {
+//
+//                Log.e("qqq", "service start")
+//                val serviceIntent = Intent(context, UpdateService::class.java)
+//                context.startService(serviceIntent.putExtra(UpdateService.RSS_URL,
+//                        "https://lenta.ru/rss/articles"))
+//                PreferencesUtils.instance.saveWidgetId(appWidgetIds[0])
+//            }
+//        }
 
         super.onUpdate(context, appWidgetManager, appWidgetIds)
     }
 
-    override fun onDeleted(context: Context?, appWidgetIds: IntArray?) {
+    override fun onEnabled(context: Context) {
+        super.onEnabled(context)
 
-        Log.e("qqq", "onDeleted")
+        Log.e("qqq", "service start")
+        UpdateService.startService(context)
+
+            //PreferencesUtils.instance.saveWidgetId(ids[0])
+    }
+
+    override fun onDisabled(context: Context) {
+        Log.e("qqq", "onDisabled")
         PreferencesUtils.instance.removeWidgetId()
-        context?.stopService(Intent(context, UpdateService::class.java))
-        super.onDeleted(context, appWidgetIds)
+        UpdateService.stopService(context)
+        super.onDisabled(context)
     }
 
     fun createNextOrPrevIntent(context: Context,
@@ -151,15 +151,14 @@ class AppWidget : AppWidgetProvider() {
         context.sendBroadcast(intent)
     }
 
-    private fun showArticle(context: Context, widgetId: Int, article: Article) {
+    private fun showArticle(context: Context, widgetId: Int, article: Article, showProgress: Int) {
 
-        Log.e("qqq", "showArticle articleid = ${article.description}")
         saveArticleId(article.id)
         updateAppWidget(context,
                 null,
                 widgetId,
                 article,
-                View.GONE)
+                showProgress)
     }
 
     private fun saveArticleId(id: String?) {
@@ -189,7 +188,7 @@ class AppWidget : AppWidgetProvider() {
 
                     val article = response as? Article
                     if (article != null) {
-                        Log.e("qqq", "updateCurrentArticle articleid = ${article.id}")
+
                         updateAppWidget(context,
                                 appWidgetManager,
                                 widgetId,

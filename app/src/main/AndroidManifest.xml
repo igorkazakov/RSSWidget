@@ -16,6 +16,7 @@
         <receiver android:name=".screen.widget.AppWidget">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="net.thepurge.volumeprofiles.plus.VolumeProfilesWidget.ACTION_WIDGET_RECEIVER"/>
                 <action android:name="com.example.igor.rsswidjet.screen.widget.ArticleWidgetProvider.Companion.DISABLE_CLICKED" />
                 <action android:name="com.example.igor.rsswidjet.screen.widget.ArticleWidgetProvider.Companion.NEXT_CLICKED" />
                 <action android:name="com.example.igor.rsswidjet.screen.widget.ArticleWidgetProvider.Companion.PREVIOUS_CLICKED" />

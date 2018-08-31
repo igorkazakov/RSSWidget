@@ -2,12 +2,11 @@ package com.example.igor.widget.screen.settings
 
 import android.app.Activity
 import android.appwidget.AppWidgetManager
-import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
@@ -15,7 +14,6 @@ import android.widget.TextView
 import android.widget.Toast
 import com.example.igor.rsswidjet.DataService.Repository
 import com.example.igor.widget.DataService.models.Article
-
 import com.example.igor.widget.R
 import com.example.igor.widget.screen.widget.AppWidget
 import com.example.igor.widget.screen.widget.AppWidget.Companion.SETTINGS_CLICKED
@@ -50,10 +48,6 @@ class AppWidgetConfigureActivity : Activity() {
     override fun onBackPressed() {
         super.onBackPressed()
         forceUpdateWidget()
-        Thread.sleep(1000)
-        forceUpdateWidget()
-        Thread.sleep(500)
-        forceUpdateWidget()
     }
 
     private fun forceUpdateWidget() {
@@ -66,35 +60,23 @@ class AppWidgetConfigureActivity : Activity() {
 
                 val article = response as? Article
                 if (article != null) {
-
+                    Thread.sleep(1500)
+                    val widgetId = PreferencesUtils.instance.getWidgetId()
                     val intent = Intent(this@AppWidgetConfigureActivity,
                             AppWidget::class.java)
                     intent.action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
-                    val ids = AppWidgetManager.getInstance(this@AppWidgetConfigureActivity)
-                            .getAppWidgetIds(ComponentName(this@AppWidgetConfigureActivity,
-                                    AppWidget::class.java))
-
                     intent.putExtra(UpdateService.UPDATE, true)
-                    if (ids != null && ids.isNotEmpty()) {
-                        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
+                    intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, arrayListOf(widgetId))
+                    intent.putExtra(AppWidget.ARTICLE, article)
 
-                        val article = response as? Article
-                        article?.let {
-                            intent.putExtra(AppWidget.ARTICLE, article)
-                        }
-
-                        this@AppWidgetConfigureActivity.sendBroadcast(intent)
-                    }
+                    this@AppWidgetConfigureActivity.sendBroadcast(intent)
                 }
             }
 
-            override fun error(error: String) {}
+            override fun error(error: String) {
+                Log.e("qqq", "onDataSetChanged error $error")
+            }
         })
-
-
-
-       // val widgetId = PreferencesUtils.instance.getWidgetId()
-      //  AppWidget.updateCurrentArticle(this, null, widgetId)
     }
 
     private fun initViews() {
@@ -105,8 +87,15 @@ class AppWidgetConfigureActivity : Activity() {
     }
 
     private fun saveNewRssUrl() {
-        PreferencesUtils.instance.saveRssUrl(mUrlEditText.text.toString())
-        finish()
+        if (mUrlEditText.text.toString().isEmpty()) {
+            Toast.makeText(this,
+                    "Адрес пустой или введен неверно",
+                    Toast.LENGTH_SHORT).show()
+
+        } else {
+            PreferencesUtils.instance.saveRssUrl(mUrlEditText.text.toString())
+            finish()
+        }
     }
 
     private fun configureRecyclerView() {
@@ -184,7 +173,8 @@ class AppWidgetConfigureActivity : Activity() {
 
         } else {
 
-            //PreferencesUtils.instance.saveWidgetId(widgetID)
+            Log.e("qqq", "create widget")
+            PreferencesUtils.instance.saveWidgetId(widgetID)
             resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetID)
             setResult(Activity.RESULT_OK, resultValue)
         }

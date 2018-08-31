@@ -15,7 +15,6 @@ class ArticleListFactory(private var mContext: Context) : RemoteViewsFactory {
     private var mData: List<Article> = mutableListOf()
 
     override fun onCreate() {
-        Log.e("qqq", "ArticleListFactory onCreate")
         setNewData()
     }
 
@@ -62,9 +61,7 @@ class ArticleListFactory(private var mContext: Context) : RemoteViewsFactory {
 
                 val article = response as? Article
                 if (article != null) {
-                    Log.e("qqq", "ArticleListFactory setNewData article.content = ${article.content} article.description = ${article.description}")
                     mData = arrayListOf(article)
-                            //getViewAt(0)
                 }
             }
 
