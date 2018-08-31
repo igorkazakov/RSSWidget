@@ -1,9 +1,7 @@
 package com.example.igor.widget.service
 
-import android.app.IntentService
 import android.appwidget.AppWidgetManager
 import android.content.*
-import android.os.Build
 import android.support.v4.app.JobIntentService
 import android.util.Log
 import android.view.View
@@ -16,13 +14,15 @@ import com.example.igor.widget.screen.widget.AppWidget
 
 
 
-class UpdateService(name: String = "UpdateService") : JobIntentService(name) {
+
+
+class UpdateService : JobIntentService() {
 
     override fun onHandleWork(intent: Intent) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        onHandleIntent(intent)
     }
 
-    override fun onHandleIntent(intent: Intent?) {
+    private fun onHandleIntent(intent: Intent) {
 
         val receiver = getStopReceiver()
 
@@ -39,7 +39,7 @@ class UpdateService(name: String = "UpdateService") : JobIntentService(name) {
 
                 Log.e("qqq", "start loading UpdateService")
 
-                Repository.instance.loadRss(intent?.getStringExtra(RSS_URL),
+                Repository.instance.loadRss(intent.getStringExtra(RSS_URL),
                         object : Repository.ResponseCallback {
 
                     override fun success(response: Any?) {
@@ -93,6 +93,7 @@ class UpdateService(name: String = "UpdateService") : JobIntentService(name) {
         const val RSS_URL = "RSS_URL"
         const val ACTION_STOP = "ACTION_STOP"
         private const val REFRESH_TIME = 18000L
+        private const val SERVICE_JOB_ID = 50
         private var mShouldStop = false
 
         fun stopService(context: Context) {
@@ -101,19 +102,25 @@ class UpdateService(name: String = "UpdateService") : JobIntentService(name) {
             context.sendBroadcast(sIntent)
         }
 
-        fun startService(context: Context) {
+        fun enqueueWork(context: Context, work: Intent) {
 
             mShouldStop = false
-            val serviceIntent = Intent(context, UpdateService::class.java)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(serviceIntent.putExtra(UpdateService.RSS_URL,
-                        "https://lenta.ru/rss/articles"))
-
-            } else {
-                context.startService(serviceIntent.putExtra(UpdateService.RSS_URL,
-                        "https://lenta.ru/rss/articles"))
-            }
+            enqueueWork(context, UpdateService::class.java, SERVICE_JOB_ID, work)
         }
+
+//        fun startService(context: Context) {
+//
+//            mShouldStop = false
+//            val serviceIntent = Intent(context, UpdateService::class.java)
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//                context.startForegroundService(serviceIntent.putExtra(UpdateService.RSS_URL,
+//                        "https://lenta.ru/rss/articles"))
+//
+//            } else {
+//                context.startService(serviceIntent.putExtra(UpdateService.RSS_URL,
+//                        "https://lenta.ru/rss/articles"))
+//            }
+//        }
     }
 
     inner class StopReceiver : BroadcastReceiver() {

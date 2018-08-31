@@ -3,6 +3,7 @@ package com.example.igor.widget.screen.widget
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.util.Log
@@ -129,9 +130,15 @@ class AppWidget : AppWidgetProvider() {
         super.onEnabled(context)
 
         Log.e("qqq", "service start")
-        UpdateService.startService(context)
 
-            //PreferencesUtils.instance.saveWidgetId(ids[0])
+        val serviceIntent = Intent(context, UpdateService::class.java)
+        serviceIntent.putExtra(UpdateService.RSS_URL, "https://lenta.ru/rss/articles")
+
+        val comp = ComponentName(context.packageName,
+                UpdateService::class.java.name)
+        UpdateService.enqueueWork(context, serviceIntent.setComponent(comp))
+
+        //PreferencesUtils.instance.saveWidgetId(ids[0])
     }
 
     override fun onDisabled(context: Context) {

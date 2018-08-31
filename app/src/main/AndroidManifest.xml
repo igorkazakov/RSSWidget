@@ -29,11 +29,11 @@
                 android:resource="@xml/app_widget_info" />
         </receiver>
 
-        <receiver android:name=".receiver.RSSBroadcastReceiver">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED"/>
-            </intent-filter>
-        </receiver>
+        <!--<receiver android:name=".receiver.RSSBroadcastReceiver">-->
+            <!--<intent-filter>-->
+                <!--<action android:name="android.intent.action.BOOT_COMPLETED"/>-->
+            <!--</intent-filter>-->
+        <!--</receiver>-->
 
         <activity android:name=".screen.settings.AppWidgetConfigureActivity">
             <intent-filter>
@@ -42,7 +42,9 @@
         </activity>
         <service android:name=".service.ArticleListService"
             android:permission="android.permission.BIND_REMOTEVIEWS"/>
-        <service android:name=".service.UpdateService" />
+        <service android:name=".service.UpdateService"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE"/>
     </application>
 
 </manifest>
