@@ -3,7 +3,6 @@ package com.example.igor.widget.screen.widget
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.util.Log
@@ -14,7 +13,7 @@ import com.example.igor.widget.DataService.models.Article
 import com.example.igor.widget.R
 import com.example.igor.widget.screen.settings.AppWidgetConfigureActivity
 import com.example.igor.widget.service.ArticleListService
-import com.example.igor.widget.service.UpdateService
+import com.example.igor.widget.service.UpdateServiceManager
 import com.example.igor.widget.utils.PreferencesUtils
 
 class AppWidget : AppWidgetProvider() {
@@ -129,22 +128,14 @@ class AppWidget : AppWidgetProvider() {
     override fun onEnabled(context: Context) {
         super.onEnabled(context)
 
-        Log.e("qqq", "service start")
-
-        val serviceIntent = Intent(context, UpdateService::class.java)
-        serviceIntent.putExtra(UpdateService.RSS_URL, "https://lenta.ru/rss/articles")
-
-        val comp = ComponentName(context.packageName,
-                UpdateService::class.java.name)
-        UpdateService.enqueueWork(context, serviceIntent.setComponent(comp))
-
+        UpdateServiceManager.startService(context)
         //PreferencesUtils.instance.saveWidgetId(ids[0])
     }
 
     override fun onDisabled(context: Context) {
         Log.e("qqq", "onDisabled")
         PreferencesUtils.instance.removeWidgetId()
-        UpdateService.stopService(context)
+        UpdateServiceManager.stopService()
         super.onDisabled(context)
     }
 

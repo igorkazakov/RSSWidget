@@ -4,7 +4,6 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.support.v4.content.WakefulBroadcastReceiver
-import android.util.Log
 import com.example.igor.widget.service.UpdateService
 
 
@@ -18,8 +17,8 @@ class RSSBroadcastReceiver : WakefulBroadcastReceiver() {
         // startWakefulService(context, (intent.setComponent(comp)));
 
         //setResultCode(Activity.RESULT_OK);
-        Log.e("qqq", "RSSBroadcastReceiver wake up!")
-        intent.putExtra(UpdateService.RSS_URL, "https://lenta.ru/rss/articles")
-        UpdateService.enqueueWork(context, intent.setComponent(comp))
+        //Log.e("qqq", "RSSBroadcastReceiver wake up!")
+        //intent.putExtra(UpdateService.RSS_URL, "https://lenta.ru/rss/articles")
+        //UpdateService.enqueueWork(context, intent.setComponent(comp))
     }
 }

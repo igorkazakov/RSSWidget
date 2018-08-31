@@ -4,6 +4,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:name=".application.RssApplication"
@@ -45,6 +46,7 @@
         <service android:name=".service.UpdateService"
             android:exported="false"
             android:permission="android.permission.BIND_JOB_SERVICE"/>
+        <service android:name=".service.UpdateServiceCompat" />
     </application>
 
 </manifest>

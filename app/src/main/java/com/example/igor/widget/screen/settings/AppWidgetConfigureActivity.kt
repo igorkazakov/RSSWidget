@@ -17,7 +17,7 @@ import com.example.igor.widget.DataService.models.Article
 import com.example.igor.widget.R
 import com.example.igor.widget.screen.widget.AppWidget
 import com.example.igor.widget.screen.widget.AppWidget.Companion.SETTINGS_CLICKED
-import com.example.igor.widget.service.UpdateService
+import com.example.igor.widget.service.UpdateServiceManager.Companion.UPDATE
 import com.example.igor.widget.utils.PreferencesUtils
 
 class AppWidgetConfigureActivity : Activity() {
@@ -65,7 +65,7 @@ class AppWidgetConfigureActivity : Activity() {
                     val intent = Intent(this@AppWidgetConfigureActivity,
                             AppWidget::class.java)
                     intent.action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
-                    intent.putExtra(UpdateService.UPDATE, true)
+                    intent.putExtra(UPDATE, true)
                     intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, arrayListOf(widgetId))
                     intent.putExtra(AppWidget.ARTICLE, article)
 
