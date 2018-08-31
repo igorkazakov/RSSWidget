@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.igor.widget">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <application
+        android:name=".application.RssApplication"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <receiver android:name=".screen.widget.AppWidget">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.example.igor.rsswidjet.screen.widget.ArticleWidgetProvider.Companion.DISABLE_CLICKED" />
+                <action android:name="com.example.igor.rsswidjet.screen.widget.ArticleWidgetProvider.Companion.NEXT_CLICKED" />
+                <action android:name="com.example.igor.rsswidjet.screen.widget.ArticleWidgetProvider.Companion.PREVIOUS_CLICKED" />
+                <action android:name="com.example.igor.rsswidjet.screen.widget.ArticleWidgetProvider.Companion.MOVE_TO_ARTICLE" />
+                <action android:name="com.example.igor.rsswidjet.screen.widget.ArticleWidgetProvider.Companion.SHOW_LOADING" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/app_widget_info" />
+        </receiver>
+
+        <receiver android:name=".receiver.RSSBroadcastReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+        </receiver>
+
+        <activity android:name=".screen.settings.AppWidgetConfigureActivity">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+        <service android:name=".service.ArticleListService"
+            android:permission="android.permission.BIND_REMOTEVIEWS"/>
+        <service android:name=".service.UpdateService" />
+    </application>
+
+</manifest>
