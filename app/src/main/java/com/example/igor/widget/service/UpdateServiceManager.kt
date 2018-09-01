@@ -2,48 +2,56 @@ package com.example.igor.widget.service
 
 import android.app.Service
 import android.appwidget.AppWidgetManager
-import android.content.ComponentName
-import android.content.Context
-import android.content.Intent
+import android.content.*
 import android.os.Build
 import android.support.v4.app.JobIntentService
 import android.util.Log
-import android.view.View
-import com.example.igor.rsswidjet.DataService.Repository
-import com.example.igor.widget.DataService.models.Article
+import com.example.igor.widget.api.Repository
+import com.example.igor.widget.api.models.Article
 import com.example.igor.widget.screen.widget.AppWidget
+import com.example.igor.widget.utils.PreferencesUtils
 
 class UpdateServiceManager {
 
     companion object {
 
         const val UPDATE = "UPDATE"
-        const val RSS_URL = "RSS_URL"
-        const val ACTION_STOP = "ACTION_STOP"
-        const val REFRESH_TIME = 18000L
-        const val SERVICE_JOB_ID = 50
-        var mShouldStop = false
+        private const val REFRESH_TIME = 60000L
+        private const val SERVICE_JOB_ID = 50
+        private var mIsStopped = true
 
         fun stopService() {
-            mShouldStop = true
+            mIsStopped = true
         }
 
         fun startService(context: Context) {
 
-            mShouldStop = false
+            if (mIsStopped) {
+                mIsStopped = false
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
-                JobIntentService.enqueueWork(context,
-                        UpdateService::class.java, SERVICE_JOB_ID,
-                        getServiceIntent(context, UpdateService::class.java))
+                    JobIntentService.enqueueWork(context,
+                            UpdateService::class.java, SERVICE_JOB_ID,
+                            getServiceIntent(context, UpdateService::class.java))
 
-            } else {
-                context.startService(getServiceIntent(context, UpdateServiceCompat::class.java))
+                } else {
+                    context.startService(getServiceIntent(context, UpdateServiceCompat::class.java))
+                }
             }
         }
 
-        fun doUpdateWork(intent: Intent, service: Service) {
+        fun updateDataWithNewRssUrl(context: Context) {
+            backgroundWork(context, true)
+        }
+
+        fun forceUpdateData(context: Context) {
+
+            AppWidget.showLoadingView(context)
+            backgroundWork(context, false)
+        }
+
+        fun doUpdateWork(service: Service) {
 
             val context = service.applicationContext
 
@@ -51,59 +59,59 @@ class UpdateServiceManager {
 
                 while (true) {
 
-                    Log.e("qqq", "UpdateService mShouldStop = $mShouldStop")
-                    if (mShouldStop) {
+                    Log.e("qqq", "UpdateService mIsStopped = $mIsStopped")
+                    if (mIsStopped) {
                         service.stopSelf()
                         break
                     }
 
                     Log.e("qqq", "start loading UpdateService")
-
-                    Repository.instance.loadRss(intent.getStringExtra(RSS_URL),
-                            object : Repository.ResponseCallback {
-
-                                override fun success(response: Any?) {
-
-                                    val updateIntent = Intent(context,
-                                            AppWidget::class.java)
-                                    updateIntent.action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
-                                    val ids = AppWidgetManager.getInstance(context)
-                                            .getAppWidgetIds(ComponentName(context,
-                                                    AppWidget::class.java))
-
-                                    updateIntent.putExtra(UPDATE, true)
-                                    if (ids != null && ids.isNotEmpty()) {
-                                        updateIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
-
-                                        val article = response as? Article
-                                        article?.let {
-                                            updateIntent.putExtra(AppWidget.ARTICLE, article)
-                                        }
-
-                                        context.sendBroadcast(updateIntent)
-                                    }
-                                }
-
-                                override fun error(error: String) {
-                                    Log.e("qqq", "error UpdateService + $error")
-                                }
-                            })
-
+                    backgroundWork(context, false)
                     Thread.sleep(REFRESH_TIME)
                 }
 
             } catch (e: Exception) {
                 e.toString()
-                AppWidget.loadingViewState(context, View.GONE)
                 Log.e("qqq", "exception UpdateService")
             }
         }
 
-        private fun getServiceIntent(context: Context, serviceClass: Class<*>) : Intent {
-            val serviceIntent = Intent(context, serviceClass)
-            serviceIntent.putExtra(RSS_URL, "https://lenta.ru/rss/articles")
+        private fun backgroundWork(context: Context, shouldUpdateUrl: Boolean) {
 
-            return serviceIntent
+            val url = PreferencesUtils.instance.getRssUrl()
+
+            Repository.instance.loadRss(url,
+                    shouldUpdateUrl,
+                    object : Repository.ResponseCallback<Article> {
+
+                        override fun success(response: Article?) {
+
+                            Log.e("qqq", "end loading UpdateService update = $shouldUpdateUrl")
+                            response?.let {
+                                val widgetId = PreferencesUtils.instance.getWidgetId()
+                                val updateIntent = Intent(context,
+                                        AppWidget::class.java)
+                                updateIntent.action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+                                updateIntent.putExtra(UPDATE, true)
+                                updateIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS,
+                                        intArrayOf(widgetId))
+                                updateIntent.putExtra(AppWidget.ARTICLE, response)
+                                PreferencesUtils.instance.saveCurrentArticleId(response.id?.toInt() ?: -1)
+
+                                context.sendBroadcast(updateIntent)
+                            }
+                        }
+
+                        override fun error(error: String) {
+                            AppWidget.showLoadingView(context)
+                            Log.e("qqq", "error UpdateService + $error")
+                        }
+                    })
+        }
+
+        private fun getServiceIntent(context: Context,
+                                     serviceClass: Class<*>): Intent {
+            return Intent(context, serviceClass)
         }
     }
 }

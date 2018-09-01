@@ -1,4 +1,4 @@
-package com.example.igor.widget.DataService.models
+package com.example.igor.widget.api.models
 
 import android.database.Cursor
 import android.os.Parcel

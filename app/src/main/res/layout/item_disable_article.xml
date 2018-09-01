@@ -13,17 +13,17 @@
             android:id="@+id/titleText"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginBottom="@dimen/view_margin_bottom"
+            android:layout_marginEnd="@dimen/view_margin_end"
+            android:layout_marginTop="@dimen/view_margin_top"
             android:layout_weight="1"
             android:text="заголовок"
             android:textSize="16sp" />
 
         <ImageButton
             android:id="@+id/enableButton"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
+            android:layout_width="@dimen/navigation_button_height"
+            android:layout_height="@dimen/navigation_button_height"
             android:layout_gravity="center_vertical"
             android:src="@android:drawable/ic_delete" />
 
@@ -33,7 +33,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginBottom="@dimen/view_margin_bottom"
         android:background="@android:color/darker_gray" />
 
 </LinearLayout>

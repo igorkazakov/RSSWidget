@@ -4,6 +4,7 @@ import android.app.Activity
 import android.appwidget.AppWidgetManager
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
@@ -12,12 +13,12 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
-import com.example.igor.rsswidjet.DataService.Repository
-import com.example.igor.widget.DataService.models.Article
+import com.example.igor.widget.api.Repository
+import com.example.igor.widget.api.models.Article
 import com.example.igor.widget.R
-import com.example.igor.widget.screen.widget.AppWidget
 import com.example.igor.widget.screen.widget.AppWidget.Companion.SETTINGS_CLICKED
-import com.example.igor.widget.service.UpdateServiceManager.Companion.UPDATE
+import com.example.igor.widget.service.UpdateServiceManager
+import com.example.igor.widget.utils.NetworkUtils
 import com.example.igor.widget.utils.PreferencesUtils
 
 class AppWidgetConfigureActivity : Activity() {
@@ -40,43 +41,46 @@ class AppWidgetConfigureActivity : Activity() {
 
         mAcceptButton.setOnClickListener {
 
-            forceUpdateWidget()
-            saveNewRssUrl()
+            if (saveNewRssUrl()) {
+                forceUpdateWidget()
+                finish()
+            }
         }
     }
 
     override fun onBackPressed() {
+
+        if (mUrlEditText.text.toString().isEmpty()) {
+            showErrorToast()
+            return
+        }
+
         super.onBackPressed()
-        forceUpdateWidget()
+
+        UpdateServiceManager.startService(this)
+
+        val oldUrl = "https://lenta.ru/rss/articles"//PreferencesUtils.instance.getRssUrl()
+        val newUrl = mUrlEditText.text.toString()
+
+        if (saveNewRssUrl() && oldUrl != newUrl) {
+            updateWidgetWithNewUrl()
+
+        } else {
+            forceUpdateWidget()
+        }
     }
 
     private fun forceUpdateWidget() {
+        val handler = Handler()
+        handler.postDelayed({
+            UpdateServiceManager.forceUpdateData(this)
 
-        val articleId = PreferencesUtils.instance.getCurrentArticleId()
+        }, 2000)
+    }
 
-        Repository.instance.fetchArticle(articleId.toString(), object : Repository.ResponseCallback {
+    private fun updateWidgetWithNewUrl() {
 
-            override fun success(response: Any?) {
-
-                val article = response as? Article
-                if (article != null) {
-                    Thread.sleep(1500)
-                    val widgetId = PreferencesUtils.instance.getWidgetId()
-                    val intent = Intent(this@AppWidgetConfigureActivity,
-                            AppWidget::class.java)
-                    intent.action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
-                    intent.putExtra(UPDATE, true)
-                    intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, arrayListOf(widgetId))
-                    intent.putExtra(AppWidget.ARTICLE, article)
-
-                    this@AppWidgetConfigureActivity.sendBroadcast(intent)
-                }
-            }
-
-            override fun error(error: String) {
-                Log.e("qqq", "onDataSetChanged error $error")
-            }
-        })
+        UpdateServiceManager.updateDataWithNewRssUrl(this)
     }
 
     private fun initViews() {
@@ -84,18 +88,27 @@ class AppWidgetConfigureActivity : Activity() {
         mUrlEditText = findViewById(R.id.urlEditText)
         mAcceptButton = findViewById(R.id.acceptButton)
         mDisableTitle = findViewById(R.id.disableTitleText)
+
+        mUrlEditText.setText("https://lenta.ru/rss/articles"/*PreferencesUtils.instance.getRssUrl()*/)
     }
 
-    private fun saveNewRssUrl() {
-        if (mUrlEditText.text.toString().isEmpty()) {
-            Toast.makeText(this,
-                    "Адрес пустой или введен неверно",
-                    Toast.LENGTH_SHORT).show()
+    private fun saveNewRssUrl() : Boolean {
+
+        if (NetworkUtils.isValidUrl("https://lenta.ru/rss/articles"/*mUrlEditText.text.toString()*/)) {
+            PreferencesUtils.instance.saveRssUrl(
+                    "https://lenta.ru/rss/articles"/*mUrlEditText.text.toString()*/)
+            return true
 
         } else {
-            PreferencesUtils.instance.saveRssUrl(mUrlEditText.text.toString())
-            finish()
+            showErrorToast()
+            return false
         }
+    }
+
+    private fun showErrorToast() {
+        Toast.makeText(this,
+                resources.getString(R.string.url_error),
+                Toast.LENGTH_SHORT).show()
     }
 
     private fun configureRecyclerView() {
@@ -105,13 +118,13 @@ class AppWidgetConfigureActivity : Activity() {
     }
 
     private fun showDisableArticles() {
-        Repository.instance.fetchDisableArticles(object : Repository.ResponseCallback {
+        Repository.instance.fetchDisableArticles(object :
+                Repository.ResponseCallback<List<Article>> {
 
-            override fun success(response: Any?) {
+            override fun success(response: List<Article>?) {
 
-                val list = response as? List<Article>
-                if (list != null && list.isNotEmpty()) {
-                    showDisabledArticles(list)
+                if (response != null && response.isNotEmpty()) {
+                    showDisabledArticles(response)
 
                 } else {
                     hideDisabledArticlesList()
@@ -137,9 +150,10 @@ class AppWidgetConfigureActivity : Activity() {
 
     private val mVenueAdapterListener = object : ArticlesAdapter.ArticlesAdapterListener {
         override fun enableArticle(articleId: String) {
-            Repository.instance.enableArticle(articleId, object : Repository.ResponseCallback {
+            Repository.instance.enableArticle(articleId, object :
+                    Repository.ResponseCallback<Article> {
 
-                override fun success(response: Any?) {
+                override fun success(response: Article?) {
                     showDisableArticles()
                 }
 
@@ -166,14 +180,15 @@ class AppWidgetConfigureActivity : Activity() {
 
         } else if (PreferencesUtils.instance.getWidgetId() > 0) {
 
-            Toast.makeText(this, "Widget already exists.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this,
+                    resources.getString(R.string.duplicate_widget_error),
+                    Toast.LENGTH_SHORT).show()
 
             setResult(Activity.RESULT_CANCELED, resultValue)
             finish()
 
         } else {
 
-            Log.e("qqq", "create widget")
             PreferencesUtils.instance.saveWidgetId(widgetID)
             resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetID)
             setResult(Activity.RESULT_OK, resultValue)

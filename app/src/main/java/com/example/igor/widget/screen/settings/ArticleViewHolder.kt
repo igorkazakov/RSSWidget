@@ -4,7 +4,7 @@ import android.support.v7.widget.RecyclerView
 import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
-import com.example.igor.widget.DataService.models.Article
+import com.example.igor.widget.api.models.Article
 import com.example.igor.widget.R
 
 class ArticleViewHolder(view: View) : RecyclerView.ViewHolder(view) {

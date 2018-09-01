@@ -7,10 +7,10 @@ import android.support.v4.app.JobIntentService
 class UpdateService : JobIntentService() {
 
     override fun onHandleWork(intent: Intent) {
-        onHandleIntent(intent)
+        onHandleIntent()
     }
 
-    private fun onHandleIntent(intent: Intent) {
-        UpdateServiceManager.doUpdateWork(intent, this)
+    private fun onHandleIntent() {
+        UpdateServiceManager.doUpdateWork(this)
     }
 }

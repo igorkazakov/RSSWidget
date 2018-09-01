@@ -6,7 +6,11 @@ import android.database.sqlite.SQLiteOpenHelper
 import com.example.igor.widget.application.RssApplication
 import com.example.igor.widget.db.dao.ArticleDao
 
-class DbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
+class DbHelper(context: Context) :
+        SQLiteOpenHelper(context,
+                DATABASE_NAME,
+                null,
+                DATABASE_VERSION) {
 
     private object HOLDER {
         val INSTANCE = DbHelper(RssApplication.applicationContext())

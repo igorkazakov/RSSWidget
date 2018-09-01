@@ -1,20 +1,28 @@
 package com.example.igor.widget.screen.widget
 
+import android.appwidget.AppWidgetManager
 import android.content.Context
+import android.content.Intent
 import android.util.Log
 import android.widget.RemoteViews
 import android.widget.RemoteViewsService.RemoteViewsFactory
-import com.example.igor.rsswidjet.DataService.Repository
-import com.example.igor.widget.DataService.models.Article
+import com.example.igor.widget.api.Repository
+import com.example.igor.widget.api.models.Article
 import com.example.igor.widget.R
 import com.example.igor.widget.utils.PreferencesUtils
 
 
-class ArticleListFactory(private var mContext: Context) : RemoteViewsFactory {
+class ArticleListFactory(private var mContext: Context,
+                         var intent: Intent) : RemoteViewsFactory {
 
-    private var mData: List<Article> = mutableListOf()
+    private lateinit var mData: List<Article>
+    private var mWidgetId: Int = 0
 
     override fun onCreate() {
+
+        mWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
+                AppWidgetManager.INVALID_APPWIDGET_ID)
+        mData = arrayListOf()
         setNewData()
     }
 
@@ -31,9 +39,14 @@ class ArticleListFactory(private var mContext: Context) : RemoteViewsFactory {
     }
 
     override fun getViewAt(position: Int): RemoteViews {
+
+        Log.e("qqq", "getViewAt")
         val rView = RemoteViews(mContext.packageName, R.layout.item_article)
         val article = mData[position]
-        rView.setTextViewText(R.id.articleTextView, article.content ?: article.description)
+        rView.setTextViewText(R.id.articleTextView,
+                article.content ?: article.description)
+        AppWidget.hideLoadingView(mContext)
+
         return rView
     }
 
@@ -55,13 +68,13 @@ class ArticleListFactory(private var mContext: Context) : RemoteViewsFactory {
 
         val articleId = PreferencesUtils.instance.getCurrentArticleId()
 
-        Repository.instance.fetchArticle(articleId.toString(), object : Repository.ResponseCallback {
+        Repository.instance.fetchArticle(articleId.toString(),
+                object : Repository.ResponseCallback<Article> {
 
-            override fun success(response: Any?) {
-
-                val article = response as? Article
-                if (article != null) {
-                    mData = arrayListOf(article)
+            override fun success(response: Article?) {
+                Log.e("qqq", "setNewData success")
+                response?.let {
+                    mData = arrayListOf(it)
                 }
             }
 

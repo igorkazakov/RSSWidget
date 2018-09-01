@@ -3,4 +3,10 @@
     <string name="appwidget_text">EXAMPLE</string>
     <string name="configure">Configure</string>
     <string name="add_widget">Add widget</string>
+    <string name="url_error">Адрес пустой или введен неверно</string>
+    <string name="duplicate_widget_error">Виджет уже создан</string>
+    <string name="blocked_articles">Заблокированные статьи</string>
+    <string name="edit_url">Изменить адрес</string>
+    <string name="edit_text_url_hint">Введите адрес Rss ленты</string>
+
 </resources>

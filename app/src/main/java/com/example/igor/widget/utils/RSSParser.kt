@@ -1,6 +1,6 @@
 package com.example.igor.widget.utils
 
-import com.example.igor.widget.DataService.models.Article
+import com.example.igor.widget.api.models.Article
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserFactory
 import java.io.StringReader
@@ -28,35 +28,42 @@ class RSSParser {
                 while (eventType != XmlPullParser.END_DOCUMENT) {
 
                     if (eventType == XmlPullParser.START_TAG) {
-                        if (xmlPullParser.name.equals("item", ignoreCase = true)) {
+                        if (xmlPullParser.name.equals("item",
+                                        ignoreCase = true)) {
                             insideItem = true
 
-                        } else if (xmlPullParser.name.equals("title", ignoreCase = true)) {
+                        } else if (xmlPullParser.name.equals("title",
+                                        ignoreCase = true)) {
                             if (insideItem) {
                                 article.title = xmlPullParser.nextText()
                             }
 
-                        } else if (xmlPullParser.name.equals("link", ignoreCase = true)) {
+                        } else if (xmlPullParser.name.equals("link",
+                                        ignoreCase = true)) {
                             if (insideItem) {
                                 article.link = xmlPullParser.nextText()
                             }
 
-                        } else if (xmlPullParser.name.equals("dc:creator", ignoreCase = true)) {
+                        } else if (xmlPullParser.name.equals("dc:creator",
+                                        ignoreCase = true)) {
                             if (insideItem) {
                                 article.author = xmlPullParser.nextText()
                             }
 
-                        } else if (xmlPullParser.name.equals("content", ignoreCase = true)) {
+                        } else if (xmlPullParser.name.equals("content",
+                                        ignoreCase = true)) {
                             if (insideItem) {
                                 article.content = xmlPullParser.nextText()
                             }
 
-                        } else if (xmlPullParser.name.equals("category", ignoreCase = true)) {
+                        } else if (xmlPullParser.name.equals("category",
+                                        ignoreCase = true)) {
                             if (insideItem) {
                                 article.category = xmlPullParser.nextText()
                             }
 
-                        } else if (xmlPullParser.name.equals("description", ignoreCase = true)) {
+                        } else if (xmlPullParser.name.equals("description",
+                                        ignoreCase = true)) {
                             if (insideItem) {
                                 article.description = xmlPullParser.nextText()
                             }

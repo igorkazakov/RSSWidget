@@ -1,15 +1,11 @@
-package com.example.igor.rsswidjet.DataService
+package com.example.igor.widget.api
 
 import android.os.Handler
 import android.os.Looper
-import com.example.igor.widget.DataService.models.Article
+import com.example.igor.widget.api.models.Article
 import com.example.igor.widget.db.dao.ArticleDao
 import com.example.igor.widget.utils.RSSParser
 import java.net.URL
-
-
-
-
 
 class Repository {
 
@@ -21,56 +17,53 @@ class Repository {
         val instance: Repository by lazy { HOLDER.INSTANCE }
     }
 
-    interface ResponseCallback {
-        fun success(response: Any?)
+    interface ResponseCallback<in T> {
+        fun success(response: T?)
         fun error(error: String)
     }
 
-    fun loadRss(url: String?, responseHandler: ResponseCallback?) {
+    fun loadRss(url: String?, updateUrl: Boolean, responseHandler: ResponseCallback<Article>?) {
 
-        if (url != null) {
+        if (url != null && url.isNotEmpty()) {
 
-            var article: Article? = null
-            val articleList: List<Article>
+            Thread(Runnable {
 
-            try {
+                var article: Article? = null
+                val articleList: List<Article>
 
-                val result = URL(url).readText()
-                val array = RSSParser.parseXML(result)
+                try {
 
-                ArticleDao.insertOrUpdate(array)
-                articleList = ArticleDao.fetchArticles()
+                    val result = URL(url).readText()
+                    val array = RSSParser.parseXML(result)
 
-            } catch (e: Exception) {
-                responseHandler?.error(e.message ?: "Something went wrong")
-                return
-            }
+                    if (updateUrl) {
+                        ArticleDao.deleteAllAndUpdate(array)
 
-            if (articleList.isNotEmpty()) {
-                article = articleList.first()
-            }
+                    } else {
+                        ArticleDao.insertOrUpdate(array)
+                    }
 
-            responseHandler?.success(article)
+                    articleList = ArticleDao.fetchAllArticles()
+
+                } catch (e: Exception) {
+                    responseHandler?.error(e.message ?: "Something went wrong")
+                    return@Runnable
+                }
+
+                if (articleList.isNotEmpty()) {
+                    article = articleList.first()
+                }
+
+                responseHandler?.success(article)
+
+            }).start()
 
         } else {
             responseHandler?.error("Url is empty!")
         }
     }
 
-    fun fetchArticles(responseHandler: ResponseCallback?) {
-
-        try {
-
-            Thread(Runnable {
-                responseHandler?.success(ArticleDao.fetchArticles())
-            }).start()
-
-        } catch (e: Exception) {
-            responseHandler?.error(e.message ?: "Something went wrong")
-        }
-    }
-
-    fun fetchDisableArticles(responseHandler: ResponseCallback?) {
+    fun fetchDisableArticles(responseHandler: ResponseCallback<List<Article>>?) {
 
         try {
 
@@ -89,7 +82,7 @@ class Repository {
         }
     }
 
-    fun fetchArticle(id: String, responseHandler: ResponseCallback?) {
+    fun fetchArticle(id: String, responseHandler: ResponseCallback<Article>?) {
 
         try {
 
@@ -102,7 +95,7 @@ class Repository {
         }
     }
 
-    fun fetchNextArticle(id: String, responseHandler: ResponseCallback?) {
+    fun fetchNextArticle(id: String, responseHandler: ResponseCallback<Article>?) {
 
         try {
 
@@ -115,7 +108,7 @@ class Repository {
         }
     }
 
-    fun fetchPrevArticle(id: String, responseHandler: ResponseCallback?) {
+    fun fetchPrevArticle(id: String, responseHandler: ResponseCallback<Article>?) {
 
         try {
 
@@ -128,7 +121,7 @@ class Repository {
         }
     }
 
-    fun disableArticle(id: String, responseHandler: ResponseCallback?) {
+    fun disableArticle(id: String, responseHandler: ResponseCallback<Article>?) {
 
         try {
 
@@ -141,7 +134,7 @@ class Repository {
         }
     }
 
-    fun enableArticle(id: String, responseHandler: ResponseCallback?) {
+    fun enableArticle(id: String, responseHandler: ResponseCallback<Article>?) {
 
         try {
 

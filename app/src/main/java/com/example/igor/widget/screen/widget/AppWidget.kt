@@ -5,11 +5,10 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
-import com.example.igor.rsswidjet.DataService.Repository
-import com.example.igor.widget.DataService.models.Article
+import com.example.igor.widget.api.Repository
+import com.example.igor.widget.api.models.Article
 import com.example.igor.widget.R
 import com.example.igor.widget.screen.settings.AppWidgetConfigureActivity
 import com.example.igor.widget.service.ArticleListService
@@ -24,59 +23,36 @@ class AppWidget : AppWidgetProvider() {
         val widgetId = PreferencesUtils.instance.getWidgetId()
         val articleId = PreferencesUtils.instance.getCurrentArticleId()
 
+        val navigationButtonsResponse = object : Repository.ResponseCallback<Article> {
+
+            override fun success(response: Article?) {
+
+                response?.let {
+                    saveArticleId(it.id)
+                    createNextOrPrevIntent(context, it)
+                }
+            }
+
+            override fun error(error: String) {}
+        }
+
         when (intent.action) {
             PREVIOUS_CLICKED -> {
 
                 Repository.instance.fetchPrevArticle(articleId.toString(),
-                        object : Repository.ResponseCallback {
-
-                            override fun success(response: Any?) {
-
-                                val article = response as? Article
-                                article?.let {
-                                    saveArticleId(article.id)
-                                    createNextOrPrevIntent(context, article)
-                                }
-                            }
-
-                            override fun error(error: String) {}
-                        })
+                        navigationButtonsResponse)
             }
 
             NEXT_CLICKED -> {
 
                 Repository.instance.fetchNextArticle(articleId.toString(),
-                        object : Repository.ResponseCallback {
-
-                            override fun success(response: Any?) {
-
-                                val article = response as? Article
-                                article?.let {
-                                    saveArticleId(article.id)
-                                    createNextOrPrevIntent(context, article)
-                                }
-                            }
-
-                            override fun error(error: String) {}
-                        })
+                        navigationButtonsResponse)
             }
 
             DISABLE_CLICKED -> {
 
                 Repository.instance.disableArticle(articleId.toString(),
-                        object : Repository.ResponseCallback {
-
-                            override fun success(response: Any?) {
-
-                                val article = response as? Article
-                                article?.let {
-                                    saveArticleId(article.id)
-                                    createNextOrPrevIntent(context, article)
-                                }
-                            }
-
-                            override fun error(error: String) {}
-                        })
+                        navigationButtonsResponse)
             }
 
             AppWidgetManager.ACTION_APPWIDGET_UPDATE -> {
@@ -85,8 +61,7 @@ class AppWidget : AppWidgetProvider() {
                 if (article != null) {
 
                     if (articleId < 0) {
-
-                        showArticle(context, widgetId, article, View.VISIBLE)
+                        showArticle(context, widgetId, article)
 
                     } else {
                         updateCurrentArticle(context, null, widgetId)
@@ -98,42 +73,16 @@ class AppWidget : AppWidgetProvider() {
 
                 val article: Article? = intent.extras.getParcelable(ARTICLE)
                 if (article != null) {
-                    showArticle(context, widgetId, article, View.GONE)
+                    showArticle(context, widgetId, article)
                 }
             }
 
-            else -> {
-            }
+            else -> {}
         }
     }
 
-    override fun onUpdate(context: Context,
-                          appWidgetManager: AppWidgetManager,
-                          appWidgetIds: IntArray) {
-
-//        if (PreferencesUtils.instance.getWidgetId() < 0) {
-//            if (appWidgetIds.isNotEmpty()) {
-//
-//                Log.e("qqq", "service start")
-//                val serviceIntent = Intent(context, UpdateService::class.java)
-//                context.startService(serviceIntent.putExtra(UpdateService.RSS_URL,
-//                        "https://lenta.ru/rss/articles"))
-//                PreferencesUtils.instance.saveWidgetId(appWidgetIds[0])
-//            }
-//        }
-
-        super.onUpdate(context, appWidgetManager, appWidgetIds)
-    }
-
-    override fun onEnabled(context: Context) {
-        super.onEnabled(context)
-
-        UpdateServiceManager.startService(context)
-        //PreferencesUtils.instance.saveWidgetId(ids[0])
-    }
-
     override fun onDisabled(context: Context) {
-        Log.e("qqq", "onDisabled")
+
         PreferencesUtils.instance.removeWidgetId()
         UpdateServiceManager.stopService()
         super.onDisabled(context)
@@ -149,14 +98,13 @@ class AppWidget : AppWidgetProvider() {
         context.sendBroadcast(intent)
     }
 
-    private fun showArticle(context: Context, widgetId: Int, article: Article, showProgress: Int) {
+    private fun showArticle(context: Context, widgetId: Int, article: Article) {
 
         saveArticleId(article.id)
         updateAppWidget(context,
                 null,
                 widgetId,
-                article,
-                showProgress)
+                article)
     }
 
     private fun saveArticleId(id: String?) {
@@ -168,30 +116,28 @@ class AppWidget : AppWidgetProvider() {
 
     companion object {
 
-        fun loadingViewState(context: Context, progress: Int) {
+        fun showLoadingView(context: Context) {
+            loadingViewState(context, View.VISIBLE)
+        }
 
-            val views = RemoteViews(context.packageName, R.layout.app_widget)
-            views.setViewVisibility(R.id.progressLayout, progress)
-            val widgetId = PreferencesUtils.instance.getWidgetId()
-            AppWidgetManager.getInstance(context).updateAppWidget(widgetId, views)
+        fun hideLoadingView(context: Context) {
+            loadingViewState(context, View.GONE)
         }
 
         fun updateCurrentArticle(context: Context, appWidgetManager: AppWidgetManager?, widgetId: Int) {
 
             val articleId = PreferencesUtils.instance.getCurrentArticleId()
 
-            Repository.instance.fetchArticle(articleId.toString(), object : Repository.ResponseCallback {
+            Repository.instance.fetchArticle(articleId.toString(), object :
+                    Repository.ResponseCallback<Article> {
 
-                override fun success(response: Any?) {
+                override fun success(response: Article?) {
 
-                    val article = response as? Article
-                    if (article != null) {
-
+                    response?.let {
                         updateAppWidget(context,
                                 appWidgetManager,
                                 widgetId,
-                                article,
-                                View.GONE)
+                                it)
                     }
                 }
 
@@ -199,18 +145,14 @@ class AppWidget : AppWidgetProvider() {
             })
         }
 
-        internal fun updateAppWidget(context: Context,
+        fun updateAppWidget(context: Context,
                                      appWidgetManager: AppWidgetManager?,
                                      appWidgetId: Int,
-                                     article: Article,
-                                     showProgress: Int) {
+                                     article: Article) {
 
             val views = RemoteViews(context.packageName, R.layout.app_widget)
-
             setRemoteAdapter(context, views, article)
-
             views.setTextViewText(R.id.titleTextView, article.title)
-            views.setViewVisibility(R.id.progressLayout, showProgress)
 
             views.setOnClickPendingIntent(R.id.leftButton,
                     getPendingSelfIntent(context,
@@ -243,13 +185,22 @@ class AppWidget : AppWidgetProvider() {
                                      article: Article?) {
 
             article?.let {
+                val widgetId = PreferencesUtils.instance.getWidgetId()
                 val adapterIntent = Intent(context, ArticleListService::class.java)
+                adapterIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId)
                 views.setRemoteAdapter(R.id.bodyTextListView, adapterIntent)
 
-                val widgetId = PreferencesUtils.instance.getWidgetId()
                 AppWidgetManager.getInstance(context)
                         .notifyAppWidgetViewDataChanged(widgetId, R.id.bodyTextListView)
             }
+        }
+
+        private fun loadingViewState(context: Context, progress: Int) {
+
+            val views = RemoteViews(context.packageName, R.layout.app_widget)
+            views.setViewVisibility(R.id.progressLayout, progress)
+            val widgetId = PreferencesUtils.instance.getWidgetId()
+            AppWidgetManager.getInstance(context).updateAppWidget(widgetId, views)
         }
 
         private fun getPendingSelfIntent(context: Context,

@@ -3,7 +3,7 @@ package com.example.igor.widget.screen.settings
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import com.example.igor.widget.DataService.models.Article
+import com.example.igor.widget.api.models.Article
 import com.example.igor.widget.R
 
 class ArticlesAdapter(private val mList: List<Article>,

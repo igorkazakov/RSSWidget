@@ -6,7 +6,7 @@ import com.example.igor.widget.screen.widget.ArticleListFactory
 
 class ArticleListService : RemoteViewsService() {
 
-    override fun onGetViewFactory(p0: Intent?): RemoteViewsFactory {
-        return ArticleListFactory(applicationContext)
+    override fun onGetViewFactory(p0: Intent): RemoteViewsFactory {
+        return ArticleListFactory(applicationContext, p0)
     }
 }

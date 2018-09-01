@@ -3,13 +3,12 @@ package com.example.igor.widget.db.dao
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
-import com.example.igor.widget.DataService.models.Article
+import com.example.igor.widget.api.models.Article
 import com.example.igor.widget.db.DbManager
 
 
 object ArticleDao {
 
-    private const val ID = "id"
     private const val TABLE_NAME = "Article"
     private const val TITLE = "title"
     private const val AUTHOR = "author"
@@ -18,8 +17,6 @@ object ArticleDao {
     private const val CONTENT = "content"
     private const val CATEGORY = "category"
     private const val DISABLE = "disable"
-
-    private const val LIMIT = 10
 
     fun createTable(): String {
         return "CREATE TABLE $TABLE_NAME (" +
@@ -65,7 +62,32 @@ object ArticleDao {
         DbManager.instance.closeDatabase()
     }
 
-    fun fetchArticles(): List<Article> {
+    fun deleteAllAndUpdate(articles: List<Article>) {
+
+        val database = DbManager.instance.openDatabase()
+
+        database?.let {
+
+            it.beginTransaction()
+            try {
+
+                deleteAll(database)
+
+                for (item in articles) {
+                    insert(item, it)
+                }
+
+                it.setTransactionSuccessful()
+
+            } finally {
+                it.endTransaction()
+            }
+        }
+
+        DbManager.instance.closeDatabase()
+    }
+
+    fun fetchAllArticles(): List<Article> {
         val database = DbManager.instance.openDatabase()
         val result: MutableList<Article> = mutableListOf()
 
@@ -152,9 +174,7 @@ object ArticleDao {
                                 "$DISABLE = 0 ORDER BY ${BaseColumns._ID} ", arrayOf())
 
                 if (cursor.moveToFirst()) {
-
                     result = Article(cursor)
-
                     cursor.close()
                 }
 
@@ -185,9 +205,7 @@ object ArticleDao {
                                 "$DISABLE = 0 ORDER BY ${BaseColumns._ID} DESC ", arrayOf())
 
                 if (cursor.moveToFirst()) {
-
                     result = Article(cursor)
-
                     cursor.close()
                 }
 
@@ -321,4 +339,9 @@ object ArticleDao {
         }
     }
 
+    private fun deleteAll(database: SQLiteDatabase) {
+
+        database.rawQuery(
+                "DELETE FROM $TABLE_NAME ", arrayOf())
+    }
 }

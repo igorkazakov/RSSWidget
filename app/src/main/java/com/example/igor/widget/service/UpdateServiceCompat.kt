@@ -6,7 +6,6 @@ import android.content.Intent
 class UpdateServiceCompat(name: String = "UpdateServiceCompat") : IntentService(name) {
 
     override fun onHandleIntent(intent: Intent) {
-
-        UpdateServiceManager.doUpdateWork(intent, this)
+        UpdateServiceManager.doUpdateWork(this)
     }
 }
