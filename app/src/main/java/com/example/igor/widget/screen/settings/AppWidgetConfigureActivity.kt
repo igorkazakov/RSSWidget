@@ -41,6 +41,8 @@ class AppWidgetConfigureActivity : Activity() {
 
         mAcceptButton.setOnClickListener {
 
+            UpdateServiceManager.startService(this)
+
             if (saveNewRssUrl()) {
                 forceUpdateWidget()
                 finish()
@@ -58,8 +60,7 @@ class AppWidgetConfigureActivity : Activity() {
         super.onBackPressed()
 
         UpdateServiceManager.startService(this)
-
-        val oldUrl = "https://lenta.ru/rss/articles"//PreferencesUtils.instance.getRssUrl()
+        val oldUrl = PreferencesUtils.instance.getRssUrl()
         val newUrl = mUrlEditText.text.toString()
 
         if (saveNewRssUrl() && oldUrl != newUrl) {
@@ -71,6 +72,9 @@ class AppWidgetConfigureActivity : Activity() {
     }
 
     private fun forceUpdateWidget() {
+
+        //TODO: need refactor!
+        //без этого кода при создании виджета не обновится список
         val handler = Handler()
         handler.postDelayed({
             UpdateServiceManager.forceUpdateData(this)
@@ -89,14 +93,15 @@ class AppWidgetConfigureActivity : Activity() {
         mAcceptButton = findViewById(R.id.acceptButton)
         mDisableTitle = findViewById(R.id.disableTitleText)
 
-        mUrlEditText.setText("https://lenta.ru/rss/articles"/*PreferencesUtils.instance.getRssUrl()*/)
+        mUrlEditText.setText(PreferencesUtils.instance.getRssUrl())
     }
 
     private fun saveNewRssUrl() : Boolean {
 
-        if (NetworkUtils.isValidUrl("https://lenta.ru/rss/articles"/*mUrlEditText.text.toString()*/)) {
-            PreferencesUtils.instance.saveRssUrl(
-                    "https://lenta.ru/rss/articles"/*mUrlEditText.text.toString()*/)
+        val url = mUrlEditText.text.toString()
+
+        if (NetworkUtils.isValidUrl(url)) {
+            PreferencesUtils.instance.saveRssUrl(url)
             return true
 
         } else {

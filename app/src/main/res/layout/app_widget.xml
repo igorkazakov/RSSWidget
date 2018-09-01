@@ -17,13 +17,18 @@
             android:layout_height="match_parent">
 
             <TextView
-                android:overScrollMode="always"
-                android:scrollbars="vertical"
-                android:isScrollContainer="true"
                 android:id="@+id/titleTextView"
+                android:layout_marginStart="5dp"
+                android:layout_marginEnd="5dp"
+                android:textSize="17sp"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="title" />
+                android:layout_height="wrap_content" />
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="5dp"
+                android:background="@color/colorPrimary"/>
 
             <ListView
                 android:id="@+id/bodyTextListView"
@@ -36,32 +41,41 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
+                android:layout_height="50dp"
+                android:background="@color/colorPrimary"
+                android:gravity="center"
                 android:orientation="horizontal">
 
                 <ImageButton
                     android:id="@+id/leftButton"
                     android:layout_width="@dimen/navigation_button_height"
                     android:layout_height="@dimen/navigation_button_height"
-                    android:src="@android:drawable/ic_media_rew" />
+                    android:background="@drawable/drawable_round_button"
+                    android:src="@drawable/ic_prev_24" />
 
                 <ImageButton
                     android:id="@+id/rightButton"
                     android:layout_width="@dimen/navigation_button_height"
                     android:layout_height="@dimen/navigation_button_height"
-                    android:src="@android:drawable/ic_media_ff" />
+                    android:layout_marginStart="5dp"
+                    android:background="@drawable/drawable_round_button"
+                    android:src="@drawable/ic_next_24" />
 
                 <ImageButton
                     android:id="@+id/disableButton"
                     android:layout_width="@dimen/navigation_button_height"
                     android:layout_height="@dimen/navigation_button_height"
-                    android:src="@android:drawable/ic_menu_close_clear_cancel" />
+                    android:layout_marginStart="5dp"
+                    android:background="@drawable/drawable_round_button"
+                    android:src="@drawable/ic_cancel_24" />
 
                 <ImageButton
                     android:id="@+id/settingsButton"
                     android:layout_width="@dimen/navigation_button_height"
                     android:layout_height="@dimen/navigation_button_height"
-                    android:src="@android:drawable/ic_menu_manage" />
+                    android:layout_marginStart="5dp"
+                    android:background="@drawable/drawable_round_button"
+                    android:src="@drawable/ic_settings_24" />
 
             </LinearLayout>
         </LinearLayout>

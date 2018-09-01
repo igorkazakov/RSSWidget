@@ -33,11 +33,14 @@
 
     <Button
         android:id="@+id/acceptButton"
-        android:text="@string/edit_url"
         android:layout_width="match_parent"
         android:layout_height="50dp"
+        android:layout_marginEnd="@dimen/view_margin_end"
         android:layout_marginStart="@dimen/view_margin_start"
-        android:layout_marginEnd="@dimen/view_margin_end"/>
+        android:background="@color/colorPrimary"
+        android:text="@string/edit_url"
+        android:textColor="@android:color/white"
+        android:textSize="18sp" />
 
     <TextView
         android:id="@+id/disableTitleText"
@@ -46,7 +49,8 @@
         android:layout_marginEnd="@dimen/view_margin_end"
         android:layout_marginStart="11dp"
         android:layout_marginTop="@dimen/view_margin_top"
-        android:text="@string/blocked_articles" />
+        android:text="@string/blocked_articles"
+        android:textSize="18sp" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recyclerView"

@@ -59,13 +59,11 @@ class UpdateServiceManager {
 
                 while (true) {
 
-                    Log.e("qqq", "UpdateService mIsStopped = $mIsStopped")
                     if (mIsStopped) {
                         service.stopSelf()
                         break
                     }
 
-                    Log.e("qqq", "start loading UpdateService")
                     backgroundWork(context, false)
                     Thread.sleep(REFRESH_TIME)
                 }
@@ -86,7 +84,6 @@ class UpdateServiceManager {
 
                         override fun success(response: Article?) {
 
-                            Log.e("qqq", "end loading UpdateService update = $shouldUpdateUrl")
                             response?.let {
                                 val widgetId = PreferencesUtils.instance.getWidgetId()
                                 val updateIntent = Intent(context,

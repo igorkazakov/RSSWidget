@@ -40,7 +40,6 @@ class ArticleListFactory(private var mContext: Context,
 
     override fun getViewAt(position: Int): RemoteViews {
 
-        Log.e("qqq", "getViewAt")
         val rView = RemoteViews(mContext.packageName, R.layout.item_article)
         val article = mData[position]
         rView.setTextViewText(R.id.articleTextView,
@@ -72,7 +71,6 @@ class ArticleListFactory(private var mContext: Context,
                 object : Repository.ResponseCallback<Article> {
 
             override fun success(response: Article?) {
-                Log.e("qqq", "setNewData success")
                 response?.let {
                     mData = arrayListOf(it)
                 }

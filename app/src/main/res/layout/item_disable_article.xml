@@ -18,14 +18,15 @@
             android:layout_marginTop="@dimen/view_margin_top"
             android:layout_weight="1"
             android:text="заголовок"
-            android:textSize="16sp" />
+            android:textSize="18sp" />
 
         <ImageButton
             android:id="@+id/enableButton"
             android:layout_width="@dimen/navigation_button_height"
             android:layout_height="@dimen/navigation_button_height"
             android:layout_gravity="center_vertical"
-            android:src="@android:drawable/ic_delete" />
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_delete_24" />
 
     </LinearLayout>
 
